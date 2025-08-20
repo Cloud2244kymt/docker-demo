@@ -12,7 +12,7 @@ pipeline {
     // and uncomment the line below:
     // DOCKER_HOST = 'unix:///var/run/docker.sock'
 
-    IMAGE_REPO   = 'Cloud2244kymt/docker-demo'  // <-- change me
+    IMAGE_REPO   = 'cuddlycloud2244/docker-demo'  // <-- change me
     CONTAINER    = "demo-app-${BUILD_NUMBER}"
     PORT_HOST    = '8081'     // test port on host (avoid clashing with Jenkins on 8080)
     PORT_IN_IMG  = '8080'     // change if your app listens on a different port
