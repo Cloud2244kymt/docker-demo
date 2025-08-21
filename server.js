@@ -1,5 +1,21 @@
+// server.js
 const express = require('express');
+const path = require('path');
+
 const app = express();
-app.get('/', (_, res) => res.send('Hello from Node + Jenkins + Docker!'));
-app.get('/healthz', (_, res) => res.send('ok'));
-app.listen(3000, () => console.log('listening on 3000'));
+const PORT = process.env.PORT || 3000;
+
+// serve static assets from /public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// health for CI
+app.get('/healthz', (_req, res) => res.type('text/plain').send('ok'));
+
+// root -> pretty UI
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on ${PORT}`);
+});
