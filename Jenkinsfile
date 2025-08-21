@@ -1,11 +1,12 @@
 pipeline {
   agent any
   environment {
-    DOCKER_HOST = 'tcp://host.docker.internal:2375'
-    IMAGE      = 'cuddlycloud2244/docker-demo'
-    APP_PORT   = '3000'
-    HOST_PORT  = '8082'
-  }
+  DOCKER_HOST = 'tcp://host.docker.internal:2375'
+  DOCKER_BUILDKIT = '1'
+  IMAGE      = 'cuddlycloud2244/docker-demo'
+  APP_PORT   = '3000'
+  HOST_PORT  = '8082'
+}
   options { timestamps() }
 
   stages {
