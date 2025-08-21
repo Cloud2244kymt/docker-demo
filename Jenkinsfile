@@ -39,25 +39,32 @@ pipeline {
     }
 
     stage('Test (smoke)') {
-      steps {
-        sh '''
-          set -e
-          CID=$(docker run -d -p 0:"${APP_PORT}" "${IMAGE}:latest")
-          # find the random host port mapped to container ${APP_PORT}
-          HP=$(docker port "$CID" ${APP_PORT}/tcp | awk -F: '{print $2}')
-          # give the app a moment to boot
-          for i in $(seq 1 20); do
-            if wget -qO- "http://localhost:${HP}/healthz" | grep -q "ok"; then
-              echo "Health OK"
-              break
-            fi
-            sleep 1
-          done
-          wget -qO- "http://localhost:${HP}/healthz" | grep -q "ok"
-          docker rm -f "$CID"
-        '''
-      }
-    }
+  steps {
+    sh '''
+      set -e
+      CID=$(docker run -d -p 0:3000 "${IMAGE}:latest")
+      # host port mapped to container 3000
+      HP=$(docker port "$CID" 3000/tcp | awk -F: '{print $2}')
+
+      # wait up to ~20s for health to be OK using curl container
+      for i in $(seq 1 20); do
+        if docker run --rm --network host curlimages/curl:8.8.0 \
+             -fsS "http://localhost:${HP}/healthz" | grep -q "ok"; then
+          echo "Health OK"
+          break
+        fi
+        sleep 1
+      done
+
+      # final assert
+      docker run --rm --network host curlimages/curl:8.8.0 \
+        -fsS "http://localhost:${HP}/healthz" | grep -q "ok"
+
+      docker rm -f "$CID"
+    '''
+  }
+}
+
 
     stage('Push') {
       steps {
