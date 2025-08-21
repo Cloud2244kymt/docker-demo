@@ -31,10 +31,11 @@ pipeline {
         sh '''
           set -e
           docker pull node:20-alpine || true
-          docker build --progress=plain \
-            -t '"${IMAGE}"':latest \
-            -t '"${IMAGE}"':'"${SHORT_SHA}"' \
-            .
+         docker build \
+  -t "${IMAGE}":latest \
+  -t "${IMAGE}":"${SHORT_SHA}" \
+  .
+
         '''
       }
     }
