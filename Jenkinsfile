@@ -1,4 +1,3 @@
-
 pipeline {
   agent any
   environment {
@@ -7,24 +6,43 @@ pipeline {
     APP_PORT   = '3000'
     HOST_PORT  = '8082'
   }
-  options { timestamps() }   // <- removed ansiColor
+  options { timestamps() }
 
   stages {
-    stage('Checkout') { steps { checkout scm } }
+    stage('Preflight') {
+      steps {
+        sh '''
+          set -x
+          echo "DOCKER_HOST=$DOCKER_HOST"
+          which docker
+          docker version
+          docker info | sed -n '1,30p'
+          ls -la
+          test -f Dockerfile && echo "Dockerfile present"
+        '''
+      }
+    }
 
     stage('Build image') {
       steps {
         script {
           env.SHORT_SHA = sh(returnStdout: true, script: "git rev-parse --short HEAD || echo ${env.BUILD_NUMBER}").trim()
         }
-        sh "docker build -t ${IMAGE}:latest -t ${IMAGE}:${SHORT_SHA} ."
+        sh '''
+          set -e
+          docker pull node:20-alpine || true
+          docker build --progress=plain \
+            -t '"${IMAGE}"':latest \
+            -t '"${IMAGE}"':'"${SHORT_SHA}"' \
+            .
+        '''
       }
     }
 
     stage('Test (smoke)') {
       steps {
         sh '''
-          CID=$(docker run -d -p 0:'"${APP_PORT}"' ${IMAGE}:latest)
+          CID=$(docker run -d -p 0:'"${APP_PORT}"' "${IMAGE}:latest")
           sleep 3
           docker exec "$CID" wget -qO- http://localhost:'"${APP_PORT}"'/healthz | grep -q ok
           docker rm -f "$CID"
