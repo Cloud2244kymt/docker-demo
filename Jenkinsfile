@@ -1,12 +1,13 @@
+
 pipeline {
   agent any
   environment {
     DOCKER_HOST = 'tcp://host.docker.internal:2375'
-    IMAGE = 'cuddlycloud2244/docker-demo'
-    APP_PORT = '3000'
-    HOST_PORT = '8082'
+    IMAGE      = 'cuddlycloud2244/docker-demo'
+    APP_PORT   = '3000'
+    HOST_PORT  = '8082'
   }
-  options { timestamps(); ansiColor('xterm') }
+  options { timestamps() }   // <- removed ansiColor
 
   stages {
     stage('Checkout') { steps { checkout scm } }
@@ -16,21 +17,18 @@ pipeline {
         script {
           env.SHORT_SHA = sh(returnStdout: true, script: "git rev-parse --short HEAD || echo ${env.BUILD_NUMBER}").trim()
         }
-        sh """
-          docker build -t ${IMAGE}:latest -t ${IMAGE}:${SHORT_SHA} .
-        """
+        sh "docker build -t ${IMAGE}:latest -t ${IMAGE}:${SHORT_SHA} ."
       }
     }
 
     stage('Test (smoke)') {
       steps {
-        sh """
-          CID=\$(docker run -d -p 0:${APP_PORT} ${IMAGE}:latest)
+        sh '''
+          CID=$(docker run -d -p 0:'"${APP_PORT}"' ${IMAGE}:latest)
           sleep 3
-          HP=\$(docker port \$CID ${APP_PORT}/tcp | sed 's/.*://')
-          curl --fail --silent http://localhost:\$HP/healthz
-          docker rm -f \$CID
-        """
+          docker exec "$CID" wget -qO- http://localhost:'"${APP_PORT}"'/healthz | grep -q ok
+          docker rm -f "$CID"
+        '''
       }
     }
 
