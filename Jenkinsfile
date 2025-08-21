@@ -1,14 +1,9 @@
 pipeline {
   agent any
-
   environment {
-    IMAGE_REPO   = 'cloud2244kymt/docker-demo'  // your Docker Hub repo
-    IMAGE_TAG    = "build-${env.BUILD_NUMBER}"
-  }
-
-  options {
-    timestamps()
-    // remove or comment out: ansiColor('xterm')
+    DOCKER_HOST    = 'npipe:////./pipe/docker_engine'
+    DOCKER_BUILDKIT = '0'                 // <— add this line
+    IMAGE_REPO     = 'cloud2244kymt/docker-demo'  // yours
   }
 
   stages {
@@ -18,36 +13,22 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh "docker --version"             // verify docker CLI in agent
-        sh "docker build -t ${IMAGE_REPO}:${IMAGE_TAG} ."
+        sh '''
+          docker --version
+          docker build --progress=plain -t ${IMAGE_REPO}:build-${BUILD_NUMBER} .
+        '''
       }
     }
 
     stage('Test in Container') {
       steps {
-        sh "docker run --rm ${IMAGE_REPO}:${IMAGE_TAG} echo 'tests ok'"
+        sh '''
+          docker run --rm ${IMAGE_REPO}:build-${BUILD_NUMBER} echo "Container OK"
+        '''
       }
     }
 
-    stage('Login & Push') {
-      when { expression { return env.DOCKERHUB_USER && env.DOCKERHUB_TOKEN } }
-      steps {
-        sh "echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USER} --password-stdin"
-        sh "docker push ${IMAGE_REPO}:${IMAGE_TAG}"
-      }
-    }
-
-    stage('Post Actions') {
-      steps {
-        echo "Built: ${IMAGE_REPO}:${IMAGE_TAG}"
-      }
-    }
-  }
-
-  post {
-    always {
-      sh "docker image prune -f || true"
-    }
+    // You can leave Login & Push commented until you set credentials
+    // stage('Login & Push') { ... }
   }
 }
-
