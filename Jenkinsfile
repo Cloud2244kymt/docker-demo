@@ -12,13 +12,16 @@ pipeline {
     }
 
     stage('Docker Build') {
-      steps {
-        sh '''
-          docker --version
-          docker build --progress=plain -t ${IMAGE_REPO}:build-${BUILD_NUMBER} .
-        '''
-      }
-    }
+  steps {
+    sh '''
+      echo "Workspace is: $PWD"
+      ls -la
+      docker --version
+      docker build --progress=plain -t ${IMAGE_REPO}:build-${BUILD_NUMBER} .
+    '''
+  }
+}
+
 
     stage('Test in Container') {
       steps {
