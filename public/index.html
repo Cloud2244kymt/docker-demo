@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Node + Jenkins + Docker</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <div class="badge">CI/CD Demo</div>
+      <h1>Node + Jenkins + Docker</h1>
+      <p class="subtitle">Automated build → test → push → deploy</p>
+    </header>
+
+    <section class="card">
+      <h2>Deployment Status</h2>
+      <div id="health" class="pill pill--unknown">Checking…</div>
+      <p class="muted">This page is served from the running container.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Pipeline</h3>
+        <ul>
+          <li>Checkout from GitHub</li>
+          <li>Build Docker image</li>
+          <li>Smoke test via <code>/healthz</code></li>
+          <li>Push to Docker Hub</li>
+          <li>Deploy container</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Links</h3>
+        <ul>
+          <li><a href="/healthz" target="_blank">Health endpoint</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>© <span id="year"></span> CI/CD Sample</span>
+    </footer>
+  </main>
+
+  <script>
+    // live health badge
+    (async function(){
+      const pill = document.getElementById('health');
+      try {
+        const res = await fetch('/healthz');
+        const txt = await res.text();
+        const ok = txt.trim() === 'ok';
+        pill.textContent = ok ? 'Healthy' : 'Unhealthy';
+        pill.className = 'pill ' + (ok ? 'pill--ok' : 'pill--bad');
+      } catch {
+        pill.textContent = 'Unreachable';
+        pill.className = 'pill pill--bad';
+      }
+      document.getElementById('year').textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
