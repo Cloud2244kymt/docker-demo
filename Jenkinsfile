@@ -24,21 +24,16 @@ pipeline {
       }
     }
 
-    stage('Build image') {
+   stage('Build image') {
   steps {
-    script {
-      env.SHORT_SHA = sh(returnStdout: true, script: "git rev-parse --short HEAD || echo ${env.BUILD_NUMBER}").trim()
-    }
     sh '''
-      set -e
-      docker pull node:20-alpine || true
-      docker build \
-        -t "${IMAGE}:latest" \
-        -t "${IMAGE}:${SHORT_SHA}" \
-        .
+      set -o pipefail
+      { docker build -t "${IMAGE}:latest" -t "${IMAGE}:${SHORT_SHA}" . ; } 2>&1 | tee build.log
     '''
+    sh 'tail -n 50 build.log || true'
   }
 }
+
 
 
     stage('Test (smoke)') {
