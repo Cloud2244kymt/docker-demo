@@ -1,0 +1,9 @@
+{
+  "name": "demo-node",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node -e \"console.log('ok');\""
+  },
+  "dependencies": { "express": "^4.19.2" }
+}
