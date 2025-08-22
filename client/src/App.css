@@ -1,11 +1,11 @@
 :root {
-  --bg: #0b1220;
-  --panel: rgba(255, 255, 255, 0.05);
-  --border: rgba(255, 255, 255, 0.1);
-  --text: #e9eefc;
-  --muted: #a7b6d7;
-  --accent: #4cc9f0;
-  --ok: #22c55e;
+  --bg: #1e293b; /* Dark gray-blue background */
+  --panel: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.2);
+  --text: #f1f5f9; /* Softer white text */
+  --muted: #94a3b8; /* Muted gray text */
+  --accent: #f97316; /* Orange highlight */
+  --ok: #10b981; /* Green for Healthy */
 }
 html,
 body,
